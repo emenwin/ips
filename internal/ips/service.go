@@ -33,6 +33,26 @@ import (
 // Service initializes and runs the main web service for the application.
 // It sets up middlewares, routes and starts the HTTP server.
 func (m *Manager) Service() {
+	// 输出配置信息
+	log.Info("Starting service with configuration:")
+	log.Info("\n" + m.Conf.ShowConfig(true))
+
+	// 初始化数据库读取器
+	log.Info("Initializing database readers...")
+	var err error
+	if m.ipv4, err = m.createReader(m.Conf.IPv4Format, m.Conf.IPv4File, false); err != nil {
+		log.Errorf("Failed to initialize IPv4 reader: %v", err)
+		log.Fatal("Cannot start service without IPv4 database reader")
+	}
+	log.Infof("IPv4 reader initialized successfully with file: %v, format: %v", m.Conf.IPv4File, m.Conf.IPv4Format)
+
+	if m.ipv6, err = m.createReader(m.Conf.IPv6Format, m.Conf.IPv6File, false); err != nil {
+		log.Warnf("Failed to initialize IPv6 reader: %v", err)
+		log.Warn("Service will continue without IPv6 support")
+	} else {
+		log.Infof("IPv6 reader initialized successfully with file: %v, format: %v", m.Conf.IPv6File, m.Conf.IPv6Format)
+	}
+
 	router := gin.New()
 
 	// Handle error from SetTrustedProxies
