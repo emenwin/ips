@@ -19,6 +19,8 @@ package ips
 import (
 	"fmt"
 	"strings"
+
+	"github.com/sjzar/ips/internal/middleware/ratelimit/model"
 )
 
 func init() {
@@ -148,6 +150,9 @@ type Config struct {
 	// Service
 	// Addr specifies the address for the service.
 	Addr string `mapstructure:"addr" default:":6860"`
+
+	// RateLimit specifies the rate limiting configuration.
+	RateLimit model.RateLimitConfig `mapstructure:"rate_limit"`
 }
 
 func (c *Config) ShowConfig(allKeys bool) string {

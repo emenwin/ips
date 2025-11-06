@@ -25,6 +25,7 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/sjzar/ips/internal/middleware/ratelimit"
 	"github.com/sjzar/ips/internal/parser"
 	"github.com/sjzar/ips/pkg/model"
 )
@@ -44,6 +45,17 @@ func (m *Manager) Service() {
 		gin.Recovery(),
 		gin.Logger(),
 	)
+
+	// 添加限流中间件
+	log.Infof("RateLimit config: enabled=%v", m.Conf.RateLimit.Enabled)
+	if m.Conf.RateLimit.Enabled {
+		log.Infof("Initializing rate limit: global=%d/%d, ip=%d/%d",
+			m.Conf.RateLimit.Global.Rate, m.Conf.RateLimit.Global.Burst,
+			m.Conf.RateLimit.IP.Rate, m.Conf.RateLimit.IP.Burst)
+		rlManager := ratelimit.NewManager(&m.Conf.RateLimit)
+		router.Use(rlManager.Middleware())
+		log.Info("Rate limit middleware enabled")
+	}
 
 	m.router = router
 
